@@ -4,6 +4,10 @@ from models.user import User
 from models.topic import Topic
 import hashlib
 import uuid
+import os
+import smartninja_redis
+
+redis = smartninja_redis.from_url(os.environ.get("REDIS_URL"))
 
 
 app = Flask(__name__)
@@ -92,20 +96,28 @@ def logout():
 
 @app.route("/create-topic", methods=["GET", "POST"])
 def topic_create():
+    user = user_from_session_token()
+    csrf_token = str(uuid.uuid4())
+
     if request.method == "GET":
-        return render_template("topic_create.html")
+        redis.set(name=csrf_token, value=user.username)
+
+        return render_template("topic_create.html", user=user, csrf_token=csrf_token)
     elif request.method == "POST":
         title = request.form.get("title")
         text = request.form.get("text")
+        csrf = request.form.get("csrf")
 
-        user = user_from_session_token()
+        redis_csrf_username = redis.get(name=csrf).decode()
 
         if not user:
             return redirect(url_for('login'))
 
-        Topic.create(title=title, text=text, author=user)
-
-        return redirect(url_for('index'))
+        if not redis_csrf_username and redis_csrf_username != user.username:
+            return "CSRF token is not valid!"
+        else:
+            Topic.create(title=title, text=text, author=user)
+            return redirect(url_for('index'))
 
 
 @app.route("/topic/<topic_id>", methods=["GET"])
