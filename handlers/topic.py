@@ -2,9 +2,10 @@ from flask import render_template, request, redirect, url_for, Blueprint
 
 from models.settings import db
 from models.topic import Topic
+from models.comment import Comment
 
-from utils.redis_helper import set_csrf_token, is_valid_csrf
 from utils.auth_helper import user_from_session_token
+from utils.redis_helper import set_csrf_token, is_valid_csrf
 
 
 topic_handlers = Blueprint("topic", __name__)
@@ -23,7 +24,7 @@ def topic_create():
     user = user_from_session_token()
 
     if request.method == "GET":
-        csrf_token = set_csrf_token(user=user)
+        csrf_token = set_csrf_token(username=user.username)
         return render_template("topic/topic_create.html", csrf_token=csrf_token)
 
     elif request.method == "POST":
@@ -44,23 +45,30 @@ def topic_create():
 
 @topic_handlers.route("/topic/<topic_id>", methods=["GET"])
 def topic_details(topic_id):
-    topic = db.query(Topic).get(int(topic_id))
     user = user_from_session_token()
+    topic = Topic.read(topic_id)
+    comments = Comment.read_all(topic)
+    csrf_token = set_csrf_token(username=user.username)
 
-    return render_template("topic/topic_details.html", topic=topic, user=user)
+    return render_template("topic/topic_details.html",
+                           topic=topic,
+                           user=user,
+                           csrf_token=csrf_token,
+                           comments=comments)
 
 
 @topic_handlers.route("/topic/<topic_id>/edit", methods=["GET", "POST"])
 def topic_edit(topic_id):
-    topic = db.query(Topic).get(int(topic_id))
+    topic = Topic.read(topic_id)
+    user = user_from_session_token()
 
     if request.method == "GET":
-        return render_template("topic/topic_edit.html", topic=topic)
+        csrf_token = set_csrf_token(username=user.username)
+        return render_template("topic/topic_edit.html", topic=topic, csrf_token=csrf_token)
+
     elif request.method == "POST":
         title = request.form.get("title")
         text = request.form.get("text")
-
-        user = user_from_session_token()
 
         if not user:
             return redirect(url_for('auth.login'))
@@ -74,7 +82,7 @@ def topic_edit(topic_id):
 
 @topic_handlers.route("/topic/<topic_id>/delete", methods=["GET", "POST"])
 def topic_delete(topic_id):
-    topic = db.query(Topic).get(int(topic_id))
+    topic = Topic.read(topic_id)
 
     if request.method == "GET":
         return render_template("topic/topic_delete.html", topic=topic)
