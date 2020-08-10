@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 
+
 {% block title %}{{ topic.title }}{% endblock title %}
 
+
 {% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Main page</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ topic.title|truncate(50) }}</li>
+    </ol>
+</nav>
 
 <h1>{{ topic.title }}</h1>
 
@@ -16,21 +25,74 @@
 {% endif %}
 
 <p class="mt-2" style="white-space: pre-wrap;">{{ topic.text }}</p>
-
 <hr>
 
+<h3>Comments</h3>
+
 {% if user %}
-<form method="post" action="/topic/{{topic.id}}/create-comment">
-    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+<div class="row mt-4">
+    <div class="col-md-5">
+        <form method="post" action="/topic/{{topic.id}}/create-comment">
+            <input type="hidden" name="csrf" value="{{ csrf_token }}">
 
-    <textarea name="text" rows="5" placeholder="Enter your comment" required></textarea>
+            <div class="form-group">
+                <textarea class="form-control" name="text" rows="5" placeholder="Enter your comment" required></textarea>
+            </div>
 
-    <button>Submit</button>
-</form>
+            <button class="btn btn-light">Submit</button>
+        </form>
+    </div>
+</div>
 {% endif %}
 
-{% for comment in comments %}
-<p><strong>{{comment.author.username}}:</strong> {{ comment.text }}</p>
-{% endfor %}
+
+<div class="row mt-4">
+    <div class="col-md-5">
+        {% for comment in comments %}
+        <div class="card bg-light mt-2 mb-2">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">
+                    <i>{{comment.author.username}}, {{ comment.created.strftime('%d %b %Y at %I:%M %p') }}</i>
+                </h6>
+
+                <p class="card-text">{{ comment.text }}</p>
+
+                {% if user and user.username == comment.author.username %}
+                <a href="/comment/{{comment.id}}/edit" class="card-link">Edit</a>
+                <a href="#" class="card-link" data-toggle="modal" data-target="#deleteCommentModal-{{comment.id}}">Delete</a>
+                {% endif %}
+            </div>
+        </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="deleteCommentModal-{{comment.id}}" tabindex="-1" role="dialog" aria-labelledby="deleteCommentModalLabel-{{comment.id}}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteCommentModalLabel-{{comment.id}}">Delete comment</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Do you really want to delete this comment: "{{ comment.text|truncate(50) }}"
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+
+                        <form method="post" action="/comment/{{comment.id}}/delete">
+                            <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                            <button type="submit" class="btn btn-danger">Yes, delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 
 {% endblock content %}

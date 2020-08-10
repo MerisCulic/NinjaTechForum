@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.String)
 
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -27,3 +27,9 @@ class Comment(db.Model):
         comments = db.query(Comment).filter_by(topic=topic).all()
 
         return comments
+
+    @classmethod
+    def get_comment(cls, comment_id):
+        comment = db.query(Comment).get(int(comment_id))
+
+        return comment

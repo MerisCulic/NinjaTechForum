@@ -95,6 +95,10 @@ def topic_delete(topic_id):
         elif topic.author_id != user.id:
             return "You are not the author!"
         else:
+            comments = Comment.read_all(topic)
+            for comment in comments:
+                db.delete(comment)
             db.delete(topic)
+
             db.commit()
             return redirect(url_for('topic.index'))
