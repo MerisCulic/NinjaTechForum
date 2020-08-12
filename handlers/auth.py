@@ -18,6 +18,7 @@ def signup():
 
     elif request.method == "POST":
         username = request.form.get("username")
+        email = request.form.get("email-address")
         password = request.form.get("password")
         repeat = request.form.get("repeat")
 
@@ -28,6 +29,7 @@ def signup():
 
         user = User.create(
                     username=username,
+                    email=email,
                     password_hash=password_hash,
                     )
 
