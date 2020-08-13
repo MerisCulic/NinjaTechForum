@@ -4,11 +4,8 @@ import requests
 
 
 def send_email(receiver_email, subject, text):
-#    sender_email = os.getenv("MY_SENDER_EMAIL")
-#    api_key = os.getenv('SENDGRID_API_KEY')
-
-    sender_email = "meris.culic@gmail.com"
-    api_key = "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"
+    sender_email = os.getenv("MY_SENDER_EMAIL")
+    api_key = os.getenv('SENDGRID_API_KEY')
 
     if not sender_email or not api_key:
         print("No env vars or no email address")
