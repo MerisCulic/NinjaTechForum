@@ -7,6 +7,10 @@
     {% if user %}
         <h1>Welcome to Ninja Tech Forum, {{user.username}}!</h1>
 
+        {% if verification_notice %}
+            <p>Your email address has been successfully verified. Now you can post topics and write comments.</p>
+        {% endif %}
+
         <table border="1">
             <tr>
                 <th>Topic</th>

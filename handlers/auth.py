@@ -1,11 +1,13 @@
 from flask import render_template, request, redirect, url_for, make_response, Blueprint
 import hashlib
 import uuid
+import os
 
 from models.settings import db
 from models.user import User
 
 from utils.auth_helper import user_from_session_token
+from utils.email_helper import send_email
 
 
 auth_handlers = Blueprint("auth", __name__)
@@ -26,17 +28,41 @@ def signup():
             return "Passwords don't match! Go back and try again."
 
         password_hash = hashlib.sha256(password.encode()).hexdigest()
+        verification_token = str(uuid.uuid4())
 
-        user = User.create(
+        User.create(
                     username=username,
                     email=email,
                     password_hash=password_hash,
+                    verification_token=verification_token
                     )
 
-        response = make_response(redirect(url_for('topic.index')))
+        subject = "Welcome to the Ninja Tech Forum"
+        domain = "{0}.herokuapp.com".format(os.getenv("HEROKU_APP_NAME"))
+        text = "Hi! Click on this link to verify your email address: {0}/verify-email/{1}"\
+            .format(domain, verification_token)
+
+        send_email(receiver_email=email, subject=subject, text=text)
+
+        return render_template("auth/email_verification_sent_notice.html")
+
+
+@auth_handlers.route("/verify-email/<token>", methods=["GET"])
+def verify_email(token):
+    user = db.query(User).filter_by(verification_token=token).first()
+
+    if user:
+        user.verified = True
+        db.add(user)
+        db.commit()
+
+        response = make_response(redirect(url_for('topic.index', verification_notice=True, user=user)))
         response.set_cookie("session_token", user.session_token, httponly=True, samesite='Strict')
 
         return response
+
+    else:
+        return render_template("auth/email_verification_result.html", verified=user.verified)
 
 
 @auth_handlers.route("/login", methods=["GET", "POST"])
