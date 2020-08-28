@@ -4,3 +4,4 @@ sqla-wrapper
 psycopg2
 smartninja-redis
 requests
+huey
