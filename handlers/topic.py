@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, Blueprint
 
+import os
 from models.settings import db
 from models.topic import Topic
 from models.comment import Comment
