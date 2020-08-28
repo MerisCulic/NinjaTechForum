@@ -5,11 +5,13 @@ import requests
 
 def send_email(receiver_email, subject, text):
     sender_email = os.getenv("MY_SENDER_EMAIL")
-    api_key = os.getenv('SENDGRID_API_KEY')
+    api_key = os.getenv("SENDGRID_API_KEY")
 
-    if not sender_email or not api_key:
-        print("No env vars or no email address")
-        return
+    if not api_key:
+        print("No api")
+
+    if not sender_email:
+        print("No email address")
 
     else:
         url = "https://api.sendgrid.com/v3/mail/send"
@@ -25,7 +27,7 @@ def send_email(receiver_email, subject, text):
                     "type": "text/plain",
                     "value": text
                 }]
-        }
+                }
 
         headers = {
             'authorization': "Bearer {0}".format(api_key),

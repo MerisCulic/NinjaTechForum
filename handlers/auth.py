@@ -27,10 +27,14 @@ def signup():
         if password != repeat:
             return "Passwords don't match! Go back and try again."
 
+        username_taken = db.query(User).filter_by(username=username).first()
+        if username_taken:
+            return "This username is already taken. Please choose another one."
+
         password_hash = hashlib.sha256(password.encode()).hexdigest()
         verification_token = str(uuid.uuid4())
 
-        User.create(
+        user = User.create(
                     username=username,
                     email=email,
                     password_hash=password_hash,
@@ -39,12 +43,16 @@ def signup():
 
         subject = "Welcome to the Ninja Tech Forum"
         domain = "{0}.herokuapp.com".format(os.getenv("HEROKU_APP_NAME"))
+
         text = "Hi! Click on this link to verify your email address: {0}/verify-email/{1}"\
             .format(domain, verification_token)
 
         send_email(receiver_email=email, subject=subject, text=text)
 
-        return render_template("auth/email_verification_sent_notice.html")
+        response = make_response(redirect(url_for('topic.index')))
+        response.set_cookie("session_token", user.session_token, httponly=True, samesite='Strict')
+
+        return response
 
 
 @auth_handlers.route("/verify-email/<token>", methods=["GET"])
@@ -56,13 +64,7 @@ def verify_email(token):
         db.add(user)
         db.commit()
 
-        response = make_response(redirect(url_for('topic.index', verification_notice=True, user=user)))
-        response.set_cookie("session_token", user.session_token, httponly=True, samesite='Strict')
-
-        return response
-
-    else:
-        return render_template("auth/email_verification_result.html", verified=user.verified)
+    return render_template("auth/email_verification_result.html", verified=user.verified)
 
 
 @auth_handlers.route("/login", methods=["GET", "POST"])

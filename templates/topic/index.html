@@ -7,8 +7,13 @@
     {% if user %}
         <h1>Welcome to Ninja Tech Forum, {{user.username}}!</h1>
 
-        {% if verification_notice %}
-            <p>Your email address has been successfully verified. Now you can post topics and write comments.</p>
+        {% if user.verified == false %}
+            <hr>
+            <h3>Thank you for signing up to the Smart Ninja Forum</h3>
+            <p>An automatic verification email has been sent to your email address. Please confirm it to finish the registration process.<br>
+                <i>Please note: if the email cannot be seen in your inbox, check your spam folder.</i>
+            </p>
+            <hr>
         {% endif %}
 
         <table border="1">
