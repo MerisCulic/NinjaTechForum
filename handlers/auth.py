@@ -42,9 +42,7 @@ def signup():
                     )
 
         subject = "Welcome to the Ninja Tech Forum"
-#        domain = "{0}.herokuapp.com".format(os.getenv("HEROKU_APP_NAME"))  #for Heroku
-        domain = "{0}".format(os.getenv("HEROKU_APP_NAME"))  #for localhost
-
+        domain = "{0}.herokuapp.com".format(os.getenv("HEROKU_APP_NAME"))
         text = "Hi! Click on this link to verify your email address: {0}/verify-email/{1}"\
             .format(domain, verification_token)
 
