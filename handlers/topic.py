@@ -1,6 +1,5 @@
 from flask import render_template, request, redirect, url_for, Blueprint
 
-import os
 from models.settings import db
 from models.topic import Topic
 from models.comment import Comment
@@ -50,7 +49,6 @@ def topic_details(topic_id):
     topic = Topic.read(topic_id)
     comments = Comment.read_all(topic)
     csrf_token = set_csrf_token(username=user.username)
-
 
     return render_template("topic/topic_details.html",
                            topic=topic,
