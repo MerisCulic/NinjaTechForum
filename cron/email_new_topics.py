@@ -26,8 +26,8 @@ def new_topics_email():
         users = db.query(User).all()
 
         for user in users:
-            if user.email_address:
-                send_email(receiver_email=user.email_address, subject="See new topics at Ninja Tech Forum", text=message)
+            if user.email:
+                send_email(receiver_email=user.email, subject="See new topics at Ninja Tech Forum", text=message)
 
 
 if __name__ == '__main__':
