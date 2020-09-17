@@ -9,7 +9,7 @@ from utils.email_helper import send_email
 def new_topics_email():
     #  check if it is Monday
     today = datetime.datetime.now()
-    if today.isoweekday() == 4:
+    if today.isoweekday() == 1:
 
         print("Cron job: New topics weekly email")
 
